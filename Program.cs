@@ -1,110 +1,116 @@
 ﻿using Server;
 using HTTP;
 using Books;
+using CommandLine;
 
-
-
-List<Book> books = Books.BookLoader.LoadBooksFromJson("books.json");
-
-
-// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
-//home/aldenq/.dotnet/dotnet run
-
-
-var config = new HTTP.HTTP_Config();
-
-config.RegisterRouteHandler("/book", (client_Handler) =>
+class Program
 {
-
-    var response = new HttpResponse("200 OK");
-
-
-    if (client_Handler.queryParams.ContainsKey("n"))
+    static void Main(string[] args)
     {
 
+        List<Book> books = Books.BookLoader.LoadBooksFromJson("books.json");
 
-        int bookID = Int32.Parse(client_Handler.queryParams["n"]);
 
-        string output = "<html><body>";
+        // See https://aka.ms/new-console-template for more information
+        Console.WriteLine("Hello, World!");
+        //home/aldenq/.dotnet/dotnet run
 
-        foreach (Books.Book book in books)
+
+        var config = new HTTP.HTTP_Config();
+
+        config.RegisterRouteHandler("/book", (client_Handler) =>
         {
-            if (book.Id > bookID)
+
+            var response = new HttpResponse("200 OK");
+
+
+            if (client_Handler.queryParams.ContainsKey("n"))
             {
-                break;
+
+
+                int bookID = Int32.Parse(client_Handler.queryParams["n"]);
+
+                string output = "<html><body>";
+
+                foreach (Books.Book book in books)
+                {
+                    if (book.Id > bookID)
+                    {
+                        break;
+                    }
+
+                    output = output + "<h1>" + book.Title + "<h1><br>";
+                }
+
+                output = output + "</html></body>";
+                response.SetBody(output, "text/html");
+
+            }
+            else
+            {
+                response.SetBody("<html><body><h1>Please enter the ID of a book</h1></body></html>", "text/html");
+
             }
 
-            output = output + "<h1>" + book.Title + "<h1><br>";
-        }
+            client_Handler.stream.Write(response.ToBytes());
+        });
 
-        output = output + "</html></body>";
-        response.SetBody(output, "text/html");
-
-    }
-    else
-    {
-        response.SetBody("<html><body><h1>Please enter the ID of a book</h1></body></html>", "text/html");
-
-    }
-
-    client_Handler.stream.Write(response.ToBytes());
-});
-
-
-
-config.RegisterRouteHandler("/author", (client_Handler) =>
-{
-
-    var response = new HttpResponse("200 OK");
-    response.SetHeader("Server", "MyHttpServer/1.0");
-
-    if (client_Handler.queryParams.ContainsKey("a"))
-    {
-        string author = client_Handler.queryParams["a"];
-        string output = "<html><body>";
-        foreach (Books.Book book in books)
+        config.RegisterRouteHandler("/author", (client_Handler) =>
         {
-            if (book.IsWrittenBy(author))
+
+            var response = new HttpResponse("200 OK");
+            response.SetHeader("Server", "MyHttpServer/1.0");
+
+            if (client_Handler.queryParams.ContainsKey("a"))
             {
-                // Console.WriteLine(book.Title);
-                output = output + "<h1>" + book.Title + "<h1><br>";
+                string author = client_Handler.queryParams["a"];
+                string output = "<html><body>";
+                foreach (Books.Book book in books)
+                {
+                    if (book.IsWrittenBy(author))
+                    {
+                        // Console.WriteLine(book.Title);
+                        output = output + "<h1>" + book.Title + "<h1><br>";
+                    }
+
+                    output = output + "</html></body>";
+                }
+
+                response.SetBody(output, "text/html");
+
+
+            }
+            else
+            {
+                response.SetBody("<html><body><h1>Please enter the name of an Author</h1></body></html>", "text/html");
             }
 
-            output = output + "</html></body>";
+            client_Handler.stream.Write(response.ToBytes());
+        });
+
+        config.RegisterRouteHandler("/home", (client_Handler) =>
+        {
+            var response = new HttpResponse("200 OK");
+            response.SetHeader("Server", "MyHttpServer/1.0");
+            response.SetBody("<html><body><h1>Hello, World!</h1></body></html>", "text/html");
+            client_Handler.stream.Write(response.ToBytes());
+        });
+
+        config.RegisterNotFound((client_Handler) =>
+        {
+            var response = new HttpResponse("404 Not Found");
+            response.SetHeader("Server", "MyHttpServer/1.0");
+            response.SetBody("<html><body><h1>Error 404, not found</h1></body></html>", "text/html");
+            client_Handler.stream.Write(response.ToBytes());
         }
+        );
 
-        response.SetBody(output, "text/html");
 
+        CommandLineHandler handler = CommandLine.CommandLineHandler(args);
+
+        
+
+        var test = new Server.TcpServer(config);
 
     }
-    else
-    {
-        response.SetBody("<html><body><h1>Please enter the name of an Author</h1></body></html>", "text/html");
-    }
-
-    client_Handler.stream.Write(response.ToBytes());
-});
-
-config.RegisterRouteHandler("/home", (client_Handler) =>
-{
-    var response = new HttpResponse("200 OK");
-    response.SetHeader("Server", "MyHttpServer/1.0");
-    response.SetBody("<html><body><h1>Hello, World!</h1></body></html>", "text/html");
-    client_Handler.stream.Write(response.ToBytes());
-});
-
-config.RegisterNotFound((client_Handler) =>
-{
-    var response = new HttpResponse("404 Not Found");
-    response.SetHeader("Server", "MyHttpServer/1.0");
-    response.SetBody("<html><body><h1>Error 404, not found</h1></body></html>", "text/html");
-    client_Handler.stream.Write(response.ToBytes());
 }
-);
-
-
-
-
-
-var test = new Server.TcpServer(config);
