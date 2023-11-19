@@ -1,0 +1,3 @@
+22:20
+-setup basic socket server
+-make thread-pool that handles each socket

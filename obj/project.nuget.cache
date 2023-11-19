@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "0PdoGwsPJ9/V1V5ZGQzwus4GgxHCm+T1fqdDu/1jcKCFedwo81dQI74+MW6K9i3aOmNioYeeTW8d8sC2MUTlEQ==",
+  "success": true,
+  "projectFilePath": "/home/aldenq/csharp_webserver/CSharp-webserver/csharp_webserver.csproj",
+  "expectedPackageFiles": [
+    "/home/aldenq/.nuget/packages/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
